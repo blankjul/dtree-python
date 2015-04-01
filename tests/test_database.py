@@ -24,7 +24,7 @@ class DatabaseCase(unittest.TestCase):
 
     def test_get_freq_table(self):
         result = DatabaseCase.db.get_freq_table('quinlan', 'outlook', [],bAsc=True)
-        self.assertEqual(result, None)   
+        self.assertEqual(result, [(u'rain', 5), (u'sunny', 5), (u'overcast', 4)])   
 
     def test_condition_to_str_1(self):
         result = DatabaseCase.db.condition_to_str([('Outlook', ('sunny'))])
