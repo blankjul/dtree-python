@@ -1,0 +1,15 @@
+Outlook,Windy,Class
+sunny,true,Play
+sunny,true,Don't Play
+sunny,false, Don't Play
+sunny,false, Don't Play
+sunny,false, Play
+overcast,true,Play
+overcast,false,Play
+overcast,true, Play
+overcast,false, Play
+rain,true,Don't Play
+rain,true,Don't Play
+rain,false,Play
+rain,false,Play
+rain,false,Play
