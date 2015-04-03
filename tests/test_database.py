@@ -18,9 +18,9 @@ class DatabaseTest(unittest.TestCase):
         utility.args.connection_string = "sqlite:///join.db"
         utility.args.insert = True
         utility.args.query = None
-        utility.args.input_paths = ["../examples/join_table.csv"]
+        utility.args.input_paths = ["examples/join_table.csv"]
         utility.main()
-        utility.args.input_paths = ["../examples/join_addr.csv"]
+        utility.args.input_paths = ["examples/join_addr.csv"]
         utility.main()
 
     @classmethod
@@ -54,15 +54,15 @@ class DatabaseTest(unittest.TestCase):
     """
     def test_hash_column(self):
         db = Database()
-        db.add_table('system', create_from_csv("../examples/qfin_system.csv"))
+        db.add_table('system', create_from_csv("examples/qfin_system.csv"))
         h = db._hash_column('system', "Trade Nr")
         self.assertEqual(len(h), 66429)
     """   
     
     def test_join_system(self):
         db = Database()
-        db.add_table('table', create_from_csv("../examples/join_table.csv", p_strDelimiter=','))
-        db.add_table('addr', create_from_csv("../examples/join_addr.csv", p_strDelimiter=','))
+        db.add_table('table', create_from_csv("examples/join_table.csv", p_strDelimiter=','))
+        db.add_table('addr', create_from_csv("examples/join_addr.csv", p_strDelimiter=','))
         t = db.join('table', 'addr', [('refaddr', 'id')])
         strQuery = "select * from join_table t join join_addr a on t.refaddr = a.id"
         result = DatabaseTest.oConnection.execute(strQuery)
@@ -72,8 +72,8 @@ class DatabaseTest(unittest.TestCase):
         
     def test_left_join_system(self):
         db = Database()
-        db.add_table('table', create_from_csv("../examples/join_table.csv", p_strDelimiter=','))
-        db.add_table('addr', create_from_csv("../examples/join_addr.csv", p_strDelimiter=','))
+        db.add_table('table', create_from_csv("examples/join_table.csv", p_strDelimiter=','))
+        db.add_table('addr', create_from_csv("examples/join_addr.csv", p_strDelimiter=','))
         t = db.join('table', 'addr', [('refaddr', 'id')], p_strType="left")
         strQuery = "select * from join_table t left join join_addr a on t.refaddr = a.id"
         result = DatabaseTest.oConnection.execute(strQuery)
