@@ -1,67 +1,86 @@
+
+from csvkit.utilities.csvsql import CSVSQL
+from sqlalchemy.engine import create_engine
+from sqlalchemy.sql.schema import MetaData
+import sys, os
 import unittest
+
 from database import Database
+from table import create_from_csv
 
 
-class DatabaseCase(unittest.TestCase):
+class DatabaseTest(unittest.TestCase):
     
     @classmethod
+    def __create_db(cls):
+        sys.stdin.close()
+        utility = CSVSQL()
+        utility.args.connection_string = "sqlite:///join.db"
+        utility.args.insert = True
+        utility.args.query = None
+        utility.args.input_paths = ["../examples/join_table.csv"]
+        utility.main()
+        utility.args.input_paths = ["../examples/join_addr.csv"]
+        utility.main()
+
+    @classmethod
+    def __connect_db(cls):
+        strConnect = 'sqlite:///join.db'
+        engine = create_engine(strConnect, echo=False)
+        cls.meta = MetaData()
+        cls.meta.reflect(bind=engine)
+        return engine.connect()
+        
+        
+    @classmethod
     def setUpClass(cls):
-        cls.db = Database('quinlan.db')
+        DatabaseTest.__create_db()
+        cls.oConnection = DatabaseTest.__connect_db()
+        
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.oConnection.close()
+        os.system("rm join.db")
+        
+             
+    def __data_equal(self, p_lFirst, p_lSecond):
+        if len(p_lFirst) != len(p_lSecond): return False
+        for rowOfFirst, rowOfSecond in zip(p_lFirst, p_lSecond):
+            for entryOfFirst, entryOfSecond in zip (rowOfFirst, rowOfSecond):
+                if str(entryOfFirst) != str(entryOfSecond): return False
+        return True   
+        
+    """
+    def test_hash_column(self):
+        db = Database()
+        db.add_table('system', create_from_csv("../examples/qfin_system.csv"))
+        h = db._hash_column('system', "Trade Nr")
+        self.assertEqual(len(h), 66429)
+    """   
     
-    def test_get_tables(self):
-        result = DatabaseCase.db.get_tables()
-        self.assertEqual(True, 'quinlan' in result and 'second' in result)
+    def test_join_system(self):
+        db = Database()
+        db.add_table('table', create_from_csv("../examples/join_table.csv", p_strDelimiter=','))
+        db.add_table('addr', create_from_csv("../examples/join_addr.csv", p_strDelimiter=','))
+        t = db.join('table', 'addr', [('refaddr', 'id')])
+        strQuery = "select * from join_table t join join_addr a on t.refaddr = a.id"
+        result = DatabaseTest.oConnection.execute(strQuery)
+        lDataSQL = [row for row in result]
+        lDataDB = [row for row in t]
+        self.assertEqual(True, self.__data_equal(lDataSQL, lDataDB))
+        
+    def test_left_join_system(self):
+        db = Database()
+        db.add_table('table', create_from_csv("../examples/join_table.csv", p_strDelimiter=','))
+        db.add_table('addr', create_from_csv("../examples/join_addr.csv", p_strDelimiter=','))
+        t = db.join('table', 'addr', [('refaddr', 'id')], p_strType="left")
+        strQuery = "select * from join_table t left join join_addr a on t.refaddr = a.id"
+        result = DatabaseTest.oConnection.execute(strQuery)
+        lDataSQL = [row for row in result]
+        lDataDB = [row for row in t]
+        self.assertEqual(True, self.__data_equal(lDataSQL, lDataDB))    
 
-    def test_get_columns(self):
-        result = DatabaseCase.db.get_columns('quinlan')
-        expected = [u'Outlook',u'Windy',u'Class']
-        self.assertEqual(result, expected)
-        
-    def test_get_unique_value(self):
-        result = DatabaseCase.db.get_unique_value('quinlan', 'outlook', [])
-        expected = ['sunny', 'overcast', 'rain']
-        self.assertEqual(result, expected)   
-
-    def test_get_freq_table(self):
-        result = DatabaseCase.db.get_freq_table('quinlan', 'outlook', [],bAsc=True)
-        self.assertEqual(result, [(u'rain', 5), (u'sunny', 5), (u'overcast', 4)])   
-
-    def test_condition_to_str_1(self):
-        result = DatabaseCase.db.condition_to_str([('Outlook', ('sunny'))])
-        self.assertEqual(result, "WHERE Outlook='sunny'")
-        
-    def test_condition_to_str_2(self):
-        result = DatabaseCase.db.condition_to_str([('Outlook', ('sunny')), ('Windy', '0')])
-        self.assertEqual(result, "WHERE Outlook='sunny' AND Windy='0'")
-    
-    def test_metric_entropy(self):
-        result = DatabaseCase.db.metric_entropy('quinlan')
-        self.assertEqual(round(result,2), 0.940)
-
-    def test_entropy_outlook(self):
-        result = DatabaseCase.db.metric_entropy_column('quinlan', 'Outlook')
-        self.assertEqual(round(result,3), 0.694)
-        
-    def test_entropy_windy(self):
-        result = DatabaseCase.db.metric_entropy_column('quinlan', 'Windy')
-        self.assertEqual(round(result,3), 0.892)
-
-    def test_info_gain_outlook(self):
-        result = DatabaseCase.db.info_gain('quinlan', 'Outlook')
-        self.assertEqual(round(result,3), 0.247)
-        
-    def test_info_gain_windy(self):
-        result = DatabaseCase.db.info_gain('quinlan', 'Windy')
-        self.assertEqual(round(result,3), 0.048)
-        
-    def test_entropy_outlook_equal_overcast(self):
-        result = DatabaseCase.db.metric_entropy('quinlan',  p_lConditions=[('Outlook', 'overcast')])
-        self.assertEqual(round(result,3), 0)   
-        
-        
-        
-def main():
-    unittest.main()
 
 if __name__ == "__main__":
-    main()
+    unittest.main()

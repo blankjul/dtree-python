@@ -2,9 +2,12 @@ from compiler.misc import Stack
 
 
 def start(p_oDatabase, p_strTable, p_strTarget):
+    
     # create a stack for the processing
     s = Stack()
     s.push({ 'iLevel':0, 'lConditions':[] })
+    
+    print "-------------------------------------------------------------------------"
     
     while len(s) > 0:
         entry = s.pop()
@@ -24,6 +27,9 @@ def start(p_oDatabase, p_strTable, p_strTarget):
                 lConditions = list(entry['lConditions'])
                 lConditions.append((nextAttr[0], strUnique))
                 s.push({ 'iLevel':entry['iLevel'] + 1, 'lConditions':lConditions })
+                
+                
+    print "-------------------------------------------------------------------------"
 
 
 
@@ -50,12 +56,13 @@ def next_split(p_oDatabase, p_strTable, p_lConditions, p_strTarget):
         
         if strColumn in lAttr or strColumn == p_strTarget: continue
         
-        fGain = p_oDatabase.info_gain(p_strTable, strColumn, p_lConditions)
+        fGain = p_oDatabase.info_gain(p_strTable, strColumn, p_strTarget, p_lConditions)
         lColumns.append((strColumn, fGain))
         
     if len(lColumns) == 0: return None
-        
+     
     lColumns.sort(key=lambda x:-x[1])    
+    
     return lColumns[0]
 
 
