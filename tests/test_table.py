@@ -62,6 +62,9 @@ class TestTable(unittest.TestCase):
         h = quinlan.get_index("Outlook", p_bCreateIfDoesNotExist=True)
         self.assertEqual(h, {"['overcast']": set([5, 6, 7, 8]),"['rain']": set([9, 10, 11, 12, 13]),"['sunny']": set([0, 1, 2, 3, 4])})   
     
+    def test_get_unique(self):
+        self.assertEqual(TestTable.quinlan.get_unique("Outlook", []), set(['overcast', 'sunny', 'rain']))
+        
     def test_select(self):
         self.assertEqual(TestTable.quinlan.select(p_lConditions=[('Outlook', 'sunny'), ('Windy', 'true'), ('Class', "Don\'t Play")]), [1])
     

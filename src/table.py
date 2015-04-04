@@ -105,6 +105,16 @@ class Table:
         return lDictRows
     
     
+    def get_unique(self, p_strColumn, p_lConditions=[]):
+        if len(p_lConditions) == 0: lRows = range(0, self.count())
+        else: lRows = self.select(p_lConditions)
+        sResult = set()
+        for iRow in lRows:
+            entry = self.get_row(iRow, lColumns=p_strColumn)
+            sResult.add(entry[0])
+        return sResult
+    
+    
     def get_freq_table(self, p_strColumn, p_lConditions=[]):
         result = {}
         # get all rows that are fitting to all the conditions
@@ -121,7 +131,7 @@ class Table:
                 if len(joined_hashes) > 0: result[entry] = len(joined_hashes)
         return result
     
-    def get_cross_table(self, p_strFirstColumn, p_strSecondColumn, p_lConditions=[]):
+    def get_cross_table(self, p_strFirstColumn, p_strSecondColumn, p_lConditions=[], p_bReturnRowIndex=False):
         if len(p_lConditions) == 0: lRows = range(0, self.count())
         else: lRows = self.select(p_lConditions)
         dResult = {}
@@ -132,6 +142,7 @@ class Table:
                 dResult[lEntry[0]][lEntry[1]] = 1
             else:
                 dResult[lEntry[0]][lEntry[1]] += 1
+        if p_bReturnRowIndex: return dResult, lRows
         return dResult
         
         
