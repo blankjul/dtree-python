@@ -36,6 +36,9 @@ class DatabaseTest(unittest.TestCase):
     def setUpClass(cls):
         DatabaseTest.__create_db()
         cls.oConnection = DatabaseTest.__connect_db()
+        cls.db = Database()
+        cls.db.add_table('table', create_from_csv("examples/join_table.csv", p_strDelimiter=','))
+        cls.db.add_table('addr', create_from_csv("examples/join_addr.csv", p_strDelimiter=','))
         
 
     @classmethod
@@ -44,42 +47,24 @@ class DatabaseTest(unittest.TestCase):
         os.system("rm join.db")
         
              
-    def __data_equal(self, p_lFirst, p_lSecond):
-        if len(p_lFirst) != len(p_lSecond): return False
-        for rowOfFirst, rowOfSecond in zip(p_lFirst, p_lSecond):
+    def __data_equal(self, p_genFirst, p_genSecond):
+        lFirst = [row for row in p_genFirst]
+        lSecond = [row for row in p_genSecond]
+        if len(lFirst) != len(lSecond): return False
+        for rowOfFirst, rowOfSecond in zip(lFirst, lSecond):
             for entryOfFirst, entryOfSecond in zip (rowOfFirst, rowOfSecond):
                 if str(entryOfFirst) != str(entryOfSecond): return False
         return True   
-        
-    """
-    def test_hash_column(self):
-        db = Database()
-        db.add_table('system', create_from_csv("examples/qfin_system.csv"))
-        h = db._hash_column('system', "Trade Nr")
-        self.assertEqual(len(h), 66429)
-    """   
     
     def test_join_system(self):
-        db = Database()
-        db.add_table('table', create_from_csv("examples/join_table.csv", p_strDelimiter=','))
-        db.add_table('addr', create_from_csv("examples/join_addr.csv", p_strDelimiter=','))
-        t = db.join('table', 'addr', [('refaddr', 'id')])
-        strQuery = "select * from join_table t join join_addr a on t.refaddr = a.id"
-        result = DatabaseTest.oConnection.execute(strQuery)
-        lDataSQL = [row for row in result]
-        lDataDB = [row for row in t]
-        self.assertEqual(True, self.__data_equal(lDataSQL, lDataDB))
+        t = DatabaseTest.db.join('table', 'addr', [('refaddr', 'id')])
+        result = DatabaseTest.oConnection.execute("select * from join_table t join join_addr a on t.refaddr = a.id")
+        self.assertEqual(True, self.__data_equal(result, t))
         
     def test_left_join_system(self):
-        db = Database()
-        db.add_table('table', create_from_csv("examples/join_table.csv", p_strDelimiter=','))
-        db.add_table('addr', create_from_csv("examples/join_addr.csv", p_strDelimiter=','))
-        t = db.join('table', 'addr', [('refaddr', 'id')], p_strType="left")
-        strQuery = "select * from join_table t left join join_addr a on t.refaddr = a.id"
-        result = DatabaseTest.oConnection.execute(strQuery)
-        lDataSQL = [row for row in result]
-        lDataDB = [row for row in t]
-        self.assertEqual(True, self.__data_equal(lDataSQL, lDataDB))    
+        t = DatabaseTest.db.join('table', 'addr', [('refaddr', 'id')], p_strType="left")
+        result = DatabaseTest.oConnection.execute("select * from join_table t left join join_addr a on t.refaddr = a.id")
+        self.assertEqual(True, self.__data_equal(result, t))
 
 
 if __name__ == "__main__":

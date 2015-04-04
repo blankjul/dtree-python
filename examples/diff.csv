@@ -1,0 +1,15 @@
+Outlook,Windy,Class,Outlook_,Outlook__
+sunny,true,Play,sunny,sunny
+sunny,true,Don't Play,sunny,sunny
+sunny,false, Don't Play,sunny,sunny
+sunny,false, Don't Play,sunny,sunny
+sunny,false, Play,sunny,sunny
+overcast,true,Play,overcast,sunny
+overcast,false,Play,overcast,overcast
+overcast,true, Play,overcast,overcast
+overcast,false, Play,overcast,overcast
+rain,true,Don't Play,rain,rain
+rain,true,Don't Play,rain,rain
+rain,false,Play,rain,rain
+rain,false,Play,rain,rain
+rain,false,Play,rain,rain
