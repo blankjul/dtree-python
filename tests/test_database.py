@@ -2,11 +2,9 @@
 from csvkit.utilities.csvsql import CSVSQL
 from sqlalchemy.engine import create_engine
 from sqlalchemy.sql.schema import MetaData
-import sys, os
+import sys
 import unittest
 
-from database import Database
-from table import create_from_csv
 
 
 class DatabaseTest(unittest.TestCase):
@@ -32,19 +30,7 @@ class DatabaseTest(unittest.TestCase):
         return engine.connect()
         
         
-    @classmethod
-    def setUpClass(cls):
-        DatabaseTest.create_db()
-        cls.oConnection = DatabaseTest.connect_db()
-        cls.db = Database()
-        cls.db.add_table('table', create_from_csv("examples/join_table.csv", p_strDelimiter=','))
-        cls.db.add_table('addr', create_from_csv("examples/join_addr.csv", p_strDelimiter=','))
         
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.oConnection.close()
-        os.system("rm join.db")
         
     @classmethod         
     def data_equal(cls, p_genFirst, p_genSecond):

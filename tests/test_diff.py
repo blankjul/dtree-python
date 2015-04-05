@@ -20,5 +20,6 @@ class DiffTest(unittest.TestCase):
         self.assertEqual(v, [True, True, True, True, True, False, True, True, True, True, True, True, True, True])
 
 
+
 if __name__ == "__main__":
     unittest.main()

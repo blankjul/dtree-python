@@ -45,7 +45,7 @@ class C45Test(unittest.TestCase):
         self.assertEqual(round(result,3), 0.048)
 
     def test_next_split(self):
-        result = next_split(C45Test.quinlan, [], "Class")
+        result = next_split(C45Test.quinlan, [], "Class", par_strType="info_gain")
         self.assertEqual(result[0], "Outlook")
     
     def test_info_gain_cond(self):

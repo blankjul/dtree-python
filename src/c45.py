@@ -3,7 +3,7 @@ from compiler.misc import Stack
 from metric import calc_gain
 
 
-def start(p_oTable, p_strTarget):
+def start(p_oTable, p_strTarget, p_lColumns=None, par_strType="info_gain"):
     
     # create a stack for the processing
     s = Stack()
@@ -13,18 +13,19 @@ def start(p_oTable, p_strTarget):
     
     while len(s) > 0:
         entry = s.pop()
-        nextAttr = next_split(p_oTable, entry['lConditions'], p_strTarget)
+        nextAttr = next_split(p_oTable, entry['lConditions'], p_strTarget, par_strType, p_lColumns=p_lColumns)
         # if there is no next attribute or the information gain is zero (perfect decision found), we have a leaf.
         if nextAttr is None or nextAttr[1] == 0:
             
             # get the frequencies and sort them
             dFreq = p_oTable.get_freq_table(p_strTarget, entry['lConditions'])
             lFreqTable = [(k, dFreq[k]) for k in dFreq]
-            lFreqTable.sort(key=lambda x: -x[1])
+            lFreqTable.sort(key=lambda x:-x[1])
             
             iSum = sum([dFreq[k] for k in dFreq])
-            strTarget = lFreqTable[0][0][0]
-            fAccuracy = round(lFreqTable[0][1] * 100 / float(iSum), 1)
+            tClassify = lFreqTable[0]
+            strTarget = str(tClassify[0][0])
+            fAccuracy = round(tClassify[1] * 100 / float(iSum), 1)
             
             strInfo = "[{acc}%]".format(acc=fAccuracy)
             pretty_print(entry, p_strTarget=strTarget, p_strInfo=strInfo)
@@ -53,7 +54,7 @@ def pretty_print(p_dAttr, p_strTarget=None, p_strInfo=None):
         strPrint += "all"
         
     if p_strTarget: strPrint += " -> " + p_strTarget
-    if p_strInfo: strPrint += " " + p_strInfo
+    if p_strInfo: strPrint += " " + str(p_strInfo)
     print strPrint
 
 
@@ -68,7 +69,7 @@ def entropy(p_oTable, p_strColumn, p_lConditions=[]):
         for strKey in dIndex:
             iLength = len([key for key in dIndex[strKey] if key in dRows])
             if iLength > 0: lNums.append(iLength)
-    fEntropy =  calc_gain(lNums)
+    fEntropy = calc_gain(lNums)
     return fEntropy
 
 def info(p_oTable, p_strColumn, p_strTarget, p_lConditions=[]):
@@ -91,20 +92,22 @@ def info_gain(p_oTable, p_strColumn, p_strTarget, p_lConditions=[], par_fEntropy
     return par_fEntropy - info(p_oTable, p_strColumn, p_strTarget, p_lConditions)
 
 
-def next_split(p_oTable, p_lConditions, p_strTarget):
+def next_split(p_oTable, p_lConditions, p_strTarget, par_strType, p_lColumns=None):
     lColumns = []
     lAttr = [attr for attr, _ in p_lConditions]
     fEntropy = entropy(p_oTable, p_strTarget, p_lConditions)
     if fEntropy == 0: return None
     
     for strColumn in p_oTable.get_columns():
-        if strColumn in lAttr or strColumn == p_strTarget: continue
+        if strColumn in lAttr or strColumn == p_strTarget or (p_lColumns is not None and strColumn not in p_lColumns): continue
         fGain = info_gain(p_oTable, strColumn, p_strTarget, p_lConditions, par_fEntropy=fEntropy)
+        if par_strType == "gain_ratio":
+            fEntropy = entropy(p_oTable, strColumn, p_lConditions)
+            if fEntropy != 0: fGain /= fEntropy
         lColumns.append((strColumn, fGain))
         
     if len(lColumns) == 0: return None
     lColumns.sort(key=lambda x:-x[1])    
-    
     return lColumns[0]
 
 
