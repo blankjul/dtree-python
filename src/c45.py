@@ -23,7 +23,7 @@ def start(p_oTable, p_strTarget):
             lFreqTable.sort(key=lambda x: -x[1])
             
             iSum = sum([dFreq[k] for k in dFreq])
-            strTarget = lFreqTable[0][0]
+            strTarget = lFreqTable[0][0][0]
             fAccuracy = round(lFreqTable[0][1] * 100 / float(iSum), 1)
             
             strInfo = "[{acc}%]".format(acc=fAccuracy)
@@ -52,14 +52,14 @@ def pretty_print(p_dAttr, p_strTarget=None, p_strInfo=None):
     else:
         strPrint += "all"
         
-    if p_strTarget: strPrint += " -> " + p_strTarget 
+    if p_strTarget: strPrint += " -> " + p_strTarget
     if p_strInfo: strPrint += " " + p_strInfo
     print strPrint
 
 
 
 def entropy(p_oTable, p_strColumn, p_lConditions=[]):
-    dIndex = p_oTable.get_index([p_strColumn], p_bCreateIfDoesNotExist=True)
+    dIndex = p_oTable.get_index(p_strColumn, p_bCreateIfDoesNotExist=True)
     if len(p_lConditions) == 0: lNums = [len(dIndex[strKey]) for strKey in dIndex]
     else: 
         lNums = []

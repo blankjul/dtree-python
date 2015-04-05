@@ -53,7 +53,7 @@ class Table:
         for strColumn in self.lColumns:
             if lColumns is not None and strColumn not in lColumns: continue
             row.append(self.dData[strColumn][iIndex])
-        return row
+        return tuple(row)
     
     def count(self):
         return self.iCounter
@@ -72,19 +72,24 @@ class Table:
     def pretty_print(self):
         print tabulate(self.dData, headers="keys", tablefmt="simple")
         
+    
     def get_index(self, p_lColumns, p_bCreateIfDoesNotExist=False):
-        if p_bCreateIfDoesNotExist and str(p_lColumns) not in self.dIndex:
+        if isinstance(p_lColumns, (list)): p_lColumns = tuple(p_lColumns)
+        elif not isinstance(p_lColumns, (tuple)): p_lColumns = (p_lColumns,)
+        if p_bCreateIfDoesNotExist and p_lColumns not in self.dIndex:
             self.create_index(p_lColumns)
-        if str(p_lColumns) in self.dIndex: return self.dIndex[str(p_lColumns)]
+        if p_lColumns in self.dIndex: return self.dIndex[p_lColumns]
         else: return None
        
     def create_index(self, p_lColumns):
+        if isinstance(p_lColumns, (list)): p_lColumns = tuple(p_lColumns)
+        elif not isinstance(p_lColumns, (tuple)): p_lColumns = (p_lColumns,)
         h = {}
         for i in range(0, self.count()):
             entry = self.get_row(i, lColumns=p_lColumns)
-            if str(entry) not in h: h[str(entry)] = set()
-            h[str(entry)].add(i)
-        self.dIndex[str(p_lColumns)] = h
+            if entry not in h: h[entry] = set()
+            h[entry].add(i)
+        self.dIndex[p_lColumns] = h
         return h
 
 
@@ -94,13 +99,13 @@ class Table:
             lDictRows = range(0, self.count())
         elif len(p_lConditions) == 1:
             key, value = p_lConditions[0]
-            dIndex = self.get_index([key], p_bCreateIfDoesNotExist=True)
-            lDictRows = dIndex[str([value])]
+            dIndex = self.get_index(key, p_bCreateIfDoesNotExist=True)
+            lDictRows = dIndex[(value,)]
         else:
             lDictRows = []
             for key, value in p_lConditions:
-                dIndex = self.get_index([key], p_bCreateIfDoesNotExist=True)
-                lDictRows.append(dIndex[str([value])])
+                dIndex = self.get_index(key, p_bCreateIfDoesNotExist=True)
+                lDictRows.append(dIndex[(value,)])
             lDictRows = join_index(lDictRows)
         return lDictRows
     
@@ -118,7 +123,7 @@ class Table:
     def get_freq_table(self, p_strColumn, p_lConditions=[]):
         result = {}
         # get all rows that are fitting to all the conditions
-        dIndex = self.get_index([p_strColumn], p_bCreateIfDoesNotExist=True)
+        dIndex = self.get_index(p_strColumn, p_bCreateIfDoesNotExist=True)
         
         # if there are no conditions we are faster
         if p_lConditions is None or len(p_lConditions) == 0:

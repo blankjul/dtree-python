@@ -15,8 +15,8 @@ class Database:
         return self.dTables[p_strName]
 
 
-    def join(self, p_strLeftTable, p_strRightTable, p_lJoinColumn, p_strType="inner"):
-        return join.join(self.dTables[p_strLeftTable], self.dTables[p_strRightTable], p_lJoinColumn, p_strType)
+    def join(self, p_strLeftTable, p_strRightTable, p_lColumn, p_strType="inner"):
+        return join.join(self.dTables[p_strLeftTable], self.dTables[p_strRightTable], p_lColumn, p_strType)
 
     
     

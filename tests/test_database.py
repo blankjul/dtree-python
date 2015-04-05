@@ -12,7 +12,7 @@ from table import create_from_csv
 class DatabaseTest(unittest.TestCase):
     
     @classmethod
-    def __create_db(cls):
+    def create_db(cls):
         sys.stdin.close()
         utility = CSVSQL()
         utility.args.connection_string = "sqlite:///join.db"
@@ -24,7 +24,7 @@ class DatabaseTest(unittest.TestCase):
         utility.main()
 
     @classmethod
-    def __connect_db(cls):
+    def connect_db(cls):
         strConnect = 'sqlite:///join.db'
         engine = create_engine(strConnect, echo=False)
         cls.meta = MetaData()
@@ -34,8 +34,8 @@ class DatabaseTest(unittest.TestCase):
         
     @classmethod
     def setUpClass(cls):
-        DatabaseTest.__create_db()
-        cls.oConnection = DatabaseTest.__connect_db()
+        DatabaseTest.create_db()
+        cls.oConnection = DatabaseTest.connect_db()
         cls.db = Database()
         cls.db.add_table('table', create_from_csv("examples/join_table.csv", p_strDelimiter=','))
         cls.db.add_table('addr', create_from_csv("examples/join_addr.csv", p_strDelimiter=','))
@@ -46,8 +46,8 @@ class DatabaseTest(unittest.TestCase):
         cls.oConnection.close()
         os.system("rm join.db")
         
-             
-    def __data_equal(self, p_genFirst, p_genSecond):
+    @classmethod         
+    def data_equal(cls, p_genFirst, p_genSecond):
         lFirst = [row for row in p_genFirst]
         lSecond = [row for row in p_genSecond]
         if len(lFirst) != len(lSecond): return False
@@ -56,16 +56,9 @@ class DatabaseTest(unittest.TestCase):
                 if str(entryOfFirst) != str(entryOfSecond): return False
         return True   
     
-    def test_join_system(self):
-        t = DatabaseTest.db.join('table', 'addr', [('refaddr', 'id')])
-        result = DatabaseTest.oConnection.execute("select * from join_table t join join_addr a on t.refaddr = a.id")
-        self.assertEqual(True, self.__data_equal(result, t))
-        
-    def test_left_join_system(self):
-        t = DatabaseTest.db.join('table', 'addr', [('refaddr', 'id')], p_strType="left")
-        result = DatabaseTest.oConnection.execute("select * from join_table t left join join_addr a on t.refaddr = a.id")
-        self.assertEqual(True, self.__data_equal(result, t))
+
 
 
 if __name__ == "__main__":
-    unittest.main()
+    suite = unittest.TestLoader().loadTestsFromTestCase(DatabaseTest)
+    unittest.TextTestRunner(verbosity=2).run(suite)

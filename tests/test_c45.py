@@ -52,14 +52,15 @@ class C45Test(unittest.TestCase):
         result = info_gain(C45Test.quinlan, "Windy" , "Class", [("Outlook", "overcast")])
         self.assertEqual(round(result,3), 0)
         
+    @unittest.skip("no result")
     def test_start(self):
-        pass
-        #result = start(C45Test.quinlan, "Class")
-        #self.assertTrue(False)
+        result = start(C45Test.quinlan, "Class")
+        self.assertTrue(False)
 
 
 if __name__ == "__main__":
-    unittest.main()
+    suite = unittest.TestLoader().loadTestsFromTestCase(C45Test)
+    unittest.TextTestRunner(verbosity=2).run(suite)
     
 
    
